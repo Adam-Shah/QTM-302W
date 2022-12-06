@@ -1,0 +1,71 @@
+---
+title: Homework 1 -- QTM 151
+author: Adam Shah
+output: html_document
+---
+
+## Instructions:
+
+**Due:** 02/15 at 11:59PM.
+
+**What am I expecting?** An R Markdown and the compiled HTML with the answers.
+
+**Have fun!**
+
+## Homework 1
+
+Use `qplot()` function to create plots about `diamonds`. The data set diamonds is built in the package
+`ggplot2`.
+
+To get started:
+
+```{r}
+library(tidyverse)
+data(diamonds)
+```
+
+**1**. Make a small random subset of diamonds and name it as `dsmall`.
+
+```{r}
+dsmall<- diamonds %>% sample_n(1000)
+```
+
+**2**. Show the distribution of carat with a histogram, set binwidth to 0.1 and limits for the x-axis from 0
+to 3.
+
+```{r}
+qplot(dsmall$carat, geom= 'histogram', 
+      binwidth=0.1, main= 'Carat', xlab= 'Carat', 
+      fill= I('cyan'),color=I('black'), xlim=c(0,3))
+```
+
+**3**. Show the distribution of carat with a *density plot*, set the color to the variable `color`.
+
+```{r}
+qplot(carat, data= dsmall, geom= 'density', 
+      main= 'Carat', xlab= 'Carat', 
+      color=color, xlim=c(0,3))
+```
+
+**4**. Produce a scatter-plot showing the relationship between *carat* and *price*, set point shape to the
+variable cut, set point transparency to 0.1, and describe the trend of the scatter-plot.
+
+```{r}
+qplot(carat, price, geom="point", data=dsmall, 
+      main='Price by Carat', xlab='Carat', ylab='Price',
+      color=cut, alpha=0.1)
+```
+
+The trend of the scatter plot is that diamonds of a higher carat tend to be more expensive.
+
+**5**. Make another scatter-plot between *carat* and *price*, add jitters to points, set point transparency to
+0.1, apply log transformation to the x and y axes variables, and add a smooth line to the plot, then
+describe the trend of the scatter-plot.
+
+```{r}
+qplot(carat, price, geom="point", data=dsmall, 
+      main='Price by Carat', xlab='Carat', ylab='Price',
+      color=cut, alpha=0.1) + scale_x_log10() + scale_y_log10() + geom_jitter() + geom_smooth(method='lm')
+```
+
+The trend is that there is a positive linear relationship between the log of price and carat variables.

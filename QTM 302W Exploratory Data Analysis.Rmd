@@ -1,0 +1,179 @@
+---
+title: "QTM 302W Exploratory Data Analysis"
+author: "Adam Shah and Melanie Yu"
+date: '2022-10-29'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Exploratory Data Descriptor
+
+# Introduction
+
+The discussion of abortion policy has been a topic of contentious debate for decades. Many argue that access to safe abortion is a human right which offers reproductive freedom, while others posits against abortion on the basis of morality. This issue has become more relevant than ever due to the 2022 overturning of Roe v. Wade in the United States. One of the concerns that has been brought up from this decision is that women are now more at risk for health complications due to unsafe abortions from the need to obtain the procedure elsewhere. 
+
+Prior to the overturning of Roe v. Wade, abortions were granted upon request, with gestational period limit varying across states. Now, many states outright ban the performance of the procedure or have severely restricted access to abortions. Some states even ban abortions with no exceptions to rape or incest and others have shortened the gestational limit. For those whom traveling to another state where abortion is legal is unfeasible, they may attempt at-home or back-alley abortions. This is especially dangerous, since it is most often not performed by a medical professional. Unsafe abortions can cause haemorrhage, infection, and substances poisoning which can lead to death (1).
+
+Observing other countries whose laws are similar may illustrate how the overturning of Roe v. Wade could affect those in states whose legislations have changed. Because abortion policies varies from state to state, observing various countries could present a representative picture on how each type of abortion policy could affect mortality due to unsafe abortions.
+
+It has been observed on many occasions that countries with permissive abortion laws greatly reduce lower mortality from unsafe abortions (2). A case study on Canada, a country with no abortion laws, found that However, the proportion due to reported unsafe abortion varied between 17% and 22.4% in Ontario and British Columbia (BC), respectively, with a report from BC between 1963 and 1970, suggesting that 27% of direct obstetric deaths were due to unsafe abortions. Since the decriminalization, mortality due to unsafe abortions have drastically decreased and rate of abortion have remained constant (3). This disapproves the argument that the decriminalization of abortions would lead to more abortions. The banning of abortions sometimes even increases the rate of abortions due to the fact that many women must seek elsewhere for the procedure.
+	
+Unsafe abortions have become an epidemic in countries where laws are particularly strict. We aim to explore how policies affect the rate of mortality due to unsafe abortions to observe how best to prevent this issue.
+
+	
+# Methods
+
+Data for abortion death rates and percentage of total deaths by country and year were taken from the World Health Organization Mortality Database (4). The database is maintained by the WHO Division of Data, Analytics and Delivery for Impact (DDI) and contains data from over 120 countries and areas. The WHO mortality database requests data from all countries annually since 1950 and includes information on sex, age, year, and cause if death. Cause of death is recorded according to the International Classification of Diseases (ICD). There are no ethical concerns since information is reported by the country at will. However, not all countries report their data to the WHO, particularly sub-Saharan and Asian countries due to systems that might have not been institutionalized and, in some cases, shortage in trained personnel who can report cause of death also contribute to the incompleteness of the data. When data is reported to the WHO, mortality information can still be missing, incomplete, and/or incorrect. This dataset is adjusted with WHO’s Global Health Estimates (GHE) to accommodate missing and incorrect data. 
+
+The mortality due to unsafe abortion dataset consisted of the number of deaths within each age group across all countries with its corresponding years. To select countries of interest, the usability of the country’s data was paired with their abortion policy as of 2021. The WHO assessed the usability of each country’s data from 2008-2019 (5). Countries with the most complete and usable data were selected. Then, the restrictiveness of abortion polices of each country were divided into five groups based on the classification developed by the Center for Reproductive Rights: “Prohibited Altogether,” “To Save the Women’s Life,” “To Preserve Health,” “Socioeconomic Grounds,” and “On Request'' (6). One country from each category was selected to attempt an even distribution of policy restrictiveness and geographic location. The variable “restrictiveness score” in our analyses was derived from the order of this categorization, with a score of 1 being the most restrictive (“Prohibited Altogether”) and 5 being the least restrictive (“On Request”).
+
+The Philippines (100.0% completeness, 83.7% usability) were selected form the “Prohibited Altogether” category; Brazil (100.0% completeness, 84.3% usability) were selected from “To Save the Women’s Life”; United States (100.0% completeness, 87.9% usability) from “To Preserve Health”; Japan (100.0% completeness, 79.0% usability) from “Socioeconomic Grounds”; and The Netherlands (100.0% completeness, 84.0% usability) from “On Request”. The Netherlands was selected from the “On Request” category since their law does not limit pre-viability abortion. Only data from the years 2008 - 2019 were analyzed due to the assessment of data usability in those years. 
+
+The data was filtered to include ages 5 to 74 and all sexes, and the data for the desired countries in the analysis was selected. There were some gaps in years in the data. For example, the US began in 1962, while many countries’ began much later. After narrowing the dataset down to 2008-2019, there were much less missing values. There were occasional gaps in the Philippines, but it was not enough to impact the quality of the data. Age trends were analyzed by bins of [<20], [20-29], [30-39], [40-49], [50-59], and [60+]. Most analyses were performed using data later than the year 2007 to minimize missing data. From there, the percentage of total deaths due to abortions was graphed against year.
+
+```{r, include=FALSE}
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(ggpubr)
+abortion_data <- read.csv("abortion_mortality.csv")
+```
+
+```{r}
+all_age_groups <- subset(abortion_data, abortion_data$Age.Group == "[All]" & 
+                           abortion_data$Sex == "All")
+ourdata <- subset(all_age_groups, all_age_groups$Country.Name == "Philippines" | 
+                    all_age_groups$Country.Name == "Brazil" |
+                    all_age_groups$Country.Name == "United States of America" |
+                    all_age_groups$Country.Name == "Japan" |
+                    all_age_groups$Country.Name == "Netherlands")
+ourdata <- subset(ourdata, ourdata$Year>2007)
+```
+
+The primary dependent variable for the analyses was described as “percentage of cause-specific deaths out of total deaths in our data set, which was selected to maximize comparison ability between countries from different regions in the world with significantly different population sizes. The analyses performed were to investigate the trends in this value over different years and age groups in the countries in question and to determine the relationship between this abortion outcome and the policy restrictiveness score. Once this restrictiveness score was determined for each country in the data set, each country name was recorded to this value and the countries were assigned their respective score. 
+
+```{r}
+ourdata <- ourdata %>%
+  mutate(Country.Name= factor(Country.Name)) %>%
+  mutate(restrictiveness.score = recode(Country.Name, "Philippines" = "1",
+         "Brazil" = "2", "United States of America" = "3", "Japan" = "4", "Netherlands" = "5")) %>%
+  mutate(restrictiveness.score = factor(restrictiveness.score, levels = c("1","2","3","4","5")))
+```
+
+```{r}
+agegroupdata <-abortion_data %>% 
+  mutate(Age_Group = recode(Age.Group,
+                            "[0]" = "[<20]",
+                            "[1-4]" = "[<20]",
+                            "[5-9]"= "[<20]",
+                            "[10-14]"= "[<20]",
+                            "[15-19]"= "[<20]",
+                            "[20-24]"= "[20-29]",
+                            "[25-29]"= "[20-29]",
+                            "[30-34]"= "[30-39]",
+                            "[35-39]"= "[30-39]",
+                            "[40-44]"="[40-49]",
+                            "[45-49]"= "[40-49]",
+                            "[50-54]"="[50-59]",
+                            "[55-59]"= "[50-59]",
+                            "[60-64]"= "[60+]",
+                            "[65-69]"= "[60+]",
+                            "[70-74]"= "[60+]",
+                            "[75-79]"= "[60+]",
+                            "[80-84]"= "[60+]",
+                            "[85+]"= "[60+]")) 
+agegroupdata <- subset(agegroupdata, abortion_data$Country.Name == "Philippines" | 
+                         abortion_data$Country.Name == "Brazil" |
+                         abortion_data$Country.Name == "United States of America" |
+                         abortion_data$Country.Name == "Japan" |
+                         abortion_data$Country.Name == "Netherlands")
+agegroupdata <- subset(agegroupdata, agegroupdata$Year>2007)
+agegroupdata <- subset(agegroupdata, agegroupdata$Age.Group != "[All]")
+agegroupdata <- subset(agegroupdata, agegroupdata$Age.Group != "[Unknown]")
+agegroupdata <- agegroupdata %>%
+  mutate(Country.Name= factor(Country.Name)) %>%
+  mutate(restrictiveness.score = recode(Country.Name, "Philippines" = "1",
+                                        "Brazil" = "2", "United States of America" = "3", "Japan" = "4", "Netherlands" = "5")) %>%
+  mutate(restrictiveness.score = factor(restrictiveness.score, levels = c("1","2","3","4","5")))
+```
+
+A policy dataset was considered for merging with the primary dataset, however it is difficult to standardize policy changes and its categorization. An in depth research into each country’s history in abortion laws would be needed to create this dataset for a merge.
+
+# Results
+
+The primary dependent variable, percentage of cause-specific deaths out of total deaths, had distribution and central tendency measures as shown in the five countries in question.
+```{r}
+summary(ourdata$Percentage.of.cause.specific.deaths.out.of.total.deaths)
+```
+
+When this dependent variable was plotted over years, there was a downward trend in abortion deaths as a percentage of total deaths in all five countries analyzed. However, the data showed that the Philippines, followed by Brazil, had significantly higher percentage of deaths related to abortion than the other countries over the time period in the whole dataset (Figure 1). This relationship remained true when observing trends only in years later than 2007 (Figure 2). 
+
+```{r, echo=FALSE}
+ggplotly(all_age_groups %>% 
+  filter(Country.Name == "Philippines" | #1
+        Country.Name == "Brazil" | #2
+        Country.Name == "United States of America" | #3
+        Country.Name == "Canada"| #5
+       Country.Name == "Japan" #| #4 
+        ) %>%
+  group_by(Country.Code) %>%
+  ggplot(aes(x=Year,y=Percentage.of.cause.specific.deaths.out.of.total.deaths)) +
+    geom_point(aes(col=Country.Name)) + 
+    #theme(legend.position = "none") +
+    ylab("% of cause specific deaths")
+)
+```
+Figure 1: Percentage of cause-specific deaths out of total deaths plotted over time (in years) for each of the 5 countries in the study.
+
+
+```{r, echo=FALSE}
+ggplotly(ourdata %>%
+  group_by(Country.Code) %>%
+  ggplot(aes(x=Year,y=Percentage.of.cause.specific.deaths.out.of.total.deaths)) +
+  geom_point(aes(col=Country.Name))  +
+  ylab("% of cause specific deaths") +coord_cartesian(xlim=c(2007,2020))
+)
+```
+Figure 2: Percentage of cause-specific deaths out of total deaths in each of the 5 countries in years from 2008-2020. 
+
+
+When the five countries were isolated into their restrictiveness score, a negative correlation between this restrictiveness score and the percentage of cause-specific deaths in years later than 2007 was observed (Figure 3). This indicates that in the data, countries with less restrictive abortion policies tended to have a lower percentage of their total deaths occur as a result of abortion procedures. Linear regression analysis was not performed in this case because the restrictiveness score variable is in essence a factor or categorical variable, thus further analysis is needed to fully quantify the negative correlation observed between these two variables. 
+
+```{r}
+ourdata$restrictiveness_score <- as.numeric(ourdata$restrictiveness.score)
+p <- ggplot(ourdata, aes(x=restrictiveness_score, y= Percentage.of.cause.specific.deaths.out.of.total.deaths)) +
+  geom_boxplot(aes(col= Country.Name), show.legend = F) +
+  xlab("restrictiveness score") +ylab("% of cause specific deaths") +
+  geom_smooth(method="lm", se=F)
+ggplotly(p)
+```
+Figure 3: Percentage of cause-specific deaths in each of the 5 countries grouped by their respective restrictiveness score.
+
+
+When stratified based on age group, it was possible to visualize the ages at which these abortion-related deaths were most likely to occur in each of the restrictiveness categories. In each category, the percentage of abortion deaths peaked in the 20-29 year age range, and a gradual decrease in deaths accompanied an increase in age (Figure 4). Also, the negative relationship between cause-specific deaths and restrictiveness score observed in Figure 3 remained true for all age groups isolated in the analysis. 
+
+```{r, echo=F}
+ggplot(agegroupdata, aes(x=Age_Group, y=Percentage.of.cause.specific.deaths.out.of.total.deaths)) +
+  geom_boxplot(aes(col=restrictiveness.score), show.legend = T) +
+  ylab("% of cause specific deaths") + xlab("Age Group") +
+  theme(
+    legend.position = c(.95, .95),
+    legend.justification = c("right", "top"),
+    legend.box.just = "right",
+    legend.margin = margin(3, 3, 3, 3)
+  ) + labs(col="Restrictiveness Score")
+```
+
+Figure 4: Percentage of cause-specific deaths for each country grouped by restrictiveness score and placed into bins based on age group. 
+
+# References
+
+1. Grimes, David A, et al. “Unsafe Abortion: The Preventable Pandemic.” The Lancet, vol. 368, no. 9550, 2006, pp. 1908–1919., https://doi.org/10.1016/s0140-6736(06)69481-6. 
+2. Berer, Marge. “National Laws and Unsafe Abortion: The Parameters of Change.” Reproductive Health Matters, vol. 12, no. sup24, 2004, pp. 1–8., https://doi.org/10.1016/s0968-8080(04)24024-1.
+3. Shaw, Dorothy, and Wendy V. Norman. “When There Are No Abortion Laws: A Case Study of Canada.” Best Practice & Research Clinical Obstetrics & Gynaecology, vol. 62, 2020, pp. 49–62., https://doi.org/10.1016/j.bpobgyn.2019.05.010. 
+4. “Abortion.” World Health Organization, World Health Organization, https://platform.who.int/mortality/themes/theme-details/topics/indicator-groups/indicator-group-details/MDB/abortion. 
+5. “Data Quality.” World Health Organization, World Health Organization, https://platform.who.int/mortality/about/data-quality. 
+6. Goldberg, Justin. “The World's Abortion Laws: Supplemental Publications.” Center for Reproductive Rights, 1 Apr. 2021, https://reproductiverights.org/the-worlds-abortion-laws-supplemental-publications/. 

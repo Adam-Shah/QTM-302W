@@ -1,0 +1,140 @@
+---
+title: "Lab assignment 4 - Simulating Discrete Random Variables"
+output: 
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## 0. Set seed
+
+```{r echo = T}
+set.seed(1234)
+```
+
+## 1. A taste of central limit theorem
+
+**[0.5 points]** What are the mean and variance for the following distribution?
+
+```{r echo=T}
+# 1. Poisson(2) 
+#    mean: 2
+#    variance: 2
+
+# 2. Binomial(100,0.02)
+#    mean: 2
+#    variance: 1.96
+```
+
+**[1 point]** Generate 10 random variables from Poisson(2) distribution. Then take an average of the 10 generated random variables and output the average.
+
+```{r echo=T}
+pois_rvs<-rpois(10, 2)
+mean(pois_rvs)
+```
+
+**[2 points]** Initialize a vector called `avg` with length 1000. Repeat the following procedure for 1000 times:
+
+In the $i$th simulation
+
+1. Generate 10 random variables from Poisson(2) distribution.
+2. Take the average of the 10 generated random variables.
+3. Save the average to the $i$th element of vector `avg`.
+
+Run histogram function `hist(avg,breaks=seq(0,4,0.1))` to show the distribution of the elements in `avg`.
+
+```{r echo=T}
+set.seed(1234)
+avg <- rep(0,1000)
+for (i in 1:1000){
+  pois_rvs<-rpois(10, 2)
+  avg[i] <- mean(pois_rvs)
+}
+hist(avg,breaks=seq(0,4,0.1))
+```
+
+**[1 point]** Generate 10 random variables from Bin(100,0.02) distribution. Then take an average of the 10 generated random variables and output the average.
+
+```{r echo=T}
+binom_rvs <- rbinom(10, 100, 0.02)
+mean(binom_rvs)
+```
+
+**[1 point]** Initialize a vector called `avg` with length 1000. Repeat the following procedure for 1000 times:
+
+In the $i$th simulation
+
+1. Generate 10 random variables from Bin(100,0.02) distribution.
+2. Take the average of the 10 generated random variables.
+3. Save the average to the $i$th element of vector `avg`.
+
+Run histogram function `hist(avg,breaks=seq(0,4,0.1))` to show the distribution of the elements in `avg`.
+
+```{r echo=T}
+set.seed(1234)
+for (i in 1:1000){
+  binom_rvs<-rbinom(10, 100, 0.02)
+  avg[i] <- mean(binom_rvs)
+}
+hist(avg,breaks=seq(0,4,0.1))
+```
+
+**[0.5 points, open question]** Compare the two histograms generated from the two simulations. Do they share any similarities? Try to illustrate from the mean and variance of the two distributions.
+
+```{r echo=T}
+# The two histograms are very similar in both expected value and variance- the mean of both distributions is 2, and they both appear to have the same spread in values. Also, both graphs follow a bell-shaped normal distribution. 
+```
+
+
+**[1.5 points]** Initialize a vector called `avg` with length 1000. Repeat the following procedure for 1000 times:
+
+In the $i$th simulation
+
+1. Generate 10 random variables from Hypergeometric(12,6,5) distribution. (In R, you will use m=5, n=7, k=6 as parameters)
+2. Take the average of the 10 generated random variables.
+3. Save the average to the $i$th element of vector `avg`.
+
+Use histogram function `hist(avg,breaks=seq(1,4,0.1))` to show the distribution of the elements in `avg`.
+
+```{r echo=T}
+set.seed(1234)
+for (i in 1:1000){
+  hyper_rvs<-rhyper(10, 5, 7, 6)
+  avg[i] <- mean(hyper_rvs)
+}
+hist(avg,breaks=seq(1,4,0.1))
+```
+
+**[1.5 points]** Initialize a vector called `avg` with length 1000. Repeat the following procedure for 1000 times:
+
+In the $i$th simulation
+
+1. Generate 10 random variables from bin(1,log(2)) distribution.
+2. Exponentiate all 10 random variables with natural number $e$ as base. (use function `exp`)
+3. Take the average of the 10 exponentiated random variables.
+4. Save the average to the $i$th element of vector `avg`.
+
+Use histogram function `hist(avg,breaks=seq(1,3,0.1))` to show the distribution of the elements in `avg`.
+
+```{r echo=T}
+set.seed(1234)
+for (i in 1:1000){
+  binom_rvs2<-rbinom(10, 1, log(2))
+  binom_rvs3 <- exp(binom_rvs2)
+  avg[i] <- mean(binom_rvs3)
+}
+hist(avg,breaks=seq(1,3,0.1))
+```
+
+**[1 point, open question]** The following plot is the probability density function of the standard normal distribution. Compare this plot and the four histograms. Are there any similarities in terms of shape? 
+
+```{r echo=T}
+plot(seq(-5,5,0.01),dnorm(seq(-5,5,0.01)),type='l')
+```
+
+```{r echo=T}
+# The previous four histograms all follow the same general bell-like shape of the standard normal distribution. The graphs are different in that they have different means. Also, the last graph seems to skip some ranges of values underneath the curve of the normal distribution. All of the graphs seem to have a smaller variance than the standard normal distribution.
+```
+

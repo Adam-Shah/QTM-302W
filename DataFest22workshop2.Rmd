@@ -1,0 +1,554 @@
+---
+title: "DataFest22workshop2"
+author: "Zhiyun Gong"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(nycflights13)
+library(babynames)
+library(stringr)
+```
+
+
+##  dplyr package: data manipulation
+
+*split-apply-combine*: A common analytical pattern is to split data frame into pieces, apply some function to each pieces, and combine the results back together again to a new data frame. 
+
+It provides simple *verbs*, functions that correspond to the most common data manipulation tasks, to help you translate your thoughts into code.
+
+*dplyr* aims to provide a function for each basic verb of data manipulation:
+
+- group_by(): to split the data frame into pieces based on some variables.
+- filter(): to select cases based on their values.
+- arrange(): to give cases/observations a specific order
+- select(): to select variables based on their names.
+- mutate(): to add new variables that are functions of existing variables.
+- summarise(): to condense multiple values to a single value.
+
+All verbs work similarly:
+1. The first argument is a data frame;
+2. The subsequent arguments describe what to do with the data frame, using the variable names (without quotes);
+3. The result is a new data frame;
+
+### Import dataset
+
+```{r}
+babynames
+```
+
+
+### filter()
+filter() to select cases/observations/rows based on their values.
+```{r}
+filter(babynames, year==2000)
+```
+
+
+
+
+### arrange()
+Reorder the observations by their values of a variable
+```{r}
+# arrange(dataset, variable)
+arrange(babynames, n) # ascending order is default
+
+```
+
+
+*filter() and arrange() work on **observations/rows** *
+
+
+
+### select()
+select() to select variables based on their names.
+
+```{r}
+select(babynames,name, n)
+
+```
+
+
+### mutate()
+create new columns that are functions of existing columns and add them to the original dataset as a new dataset. 
+```{r}
+mutate(babynames, rank=(min_rank(desc(n)))) # keep all variables including the new one
+
+```
+
+*select() and mutate() work on **variables/columns** *
+
+### Pipe operator: *%>%* (*then*)
+Pipes take the output from one function and feed it to the first argument of the next function.
+
+### Pair summarise with group_by(). 
+group_by() to split the data frame into pieces based on some variables. 
+*split-apply-combine*: split data frame into groups, apply some function to each group, and combine the results back together again to a new data frame. 
+```{r}
+babynames %>%
+  group_by(name) %>%
+  summarise(total=sum(n)) %>%
+  arrange(desc(total)) %>%
+  top_n(5) %>%
+  ggplot(aes(x=name, y=total)) + geom_col() + coord_flip()
+```
+
+
+
+
+## forcats
+
+This package provides some tools for working with categorical variables (factors)
+
+Question 1: find the relation between religions and average hours of watching tv.
+
+```{r}
+
+relig_summary <- gss_cat %>%
+  group_by(relig) %>%
+  summarise(tvhours=mean(tvhours,na.rm = T)) 
+
+  ggplot(relig_summary,aes(x=tvhours, y=relig)) +
+  geom_point()
+```
+
+How could we interpret the plot without overall pattern? 
+
+
+### fct_reorder()
+
+Reordering the levels of a factor using *fct_reorder()*.
+
+*fct_reorder()* takes three arguments:
+
+- f, the factor whose levels you want to modify.
+
+- x, a numeric vector that you want to use to reorder the levels.
+
+- Optionally, fun, a function used if there are multiple values of x for each value of f. The default value is median.
+
+```{r}
+ggplot(relig_summary, aes(x=tvhours, y=fct_reorder(relig, tvhours))) +
+  geom_point()
+
+```
+
+
+### fct_recode
+
+
+```{r}
+levels(gss_cat$partyid)
+
+gssnew<-gss_cat %>%
+drop_na(tvhours) %>%
+mutate(partyidnew = fct_recode(partyid,
+    "Republican"    = "Strong republican",
+    "Republican"      = "Not str republican",
+    "Independent" = "Ind,near rep",
+    "Independent" = "Ind,near dem",
+    "Democrat"        = "Not str democrat",
+    "Democrat"      = "Strong democrat",
+    "Other"                 = "No answer",
+    "Other"                 = "Don't know",
+    "Other"                 = "Other party")) 
+    
+group_by(gssnew, partyidnew) %>%
+summarise(meantvhours = mean(tvhours)) %>%
+ggplot(aes(x=meantvhours, y=fct_reorder(partyidnew,meantvhours))) +
+geom_col()
+
+```
+
+### fct_collapse()
+
+If you want to collapse a lot of levels, fct_collapse() is a useful variant of fct_recode(). For each new variable, you can provide a vector of old levels:
+
+```{r}
+gss_cat %>%
+  mutate(partyidnew = fct_collapse(partyid,
+    other = c("No answer", "Don't know", "Other party"),
+    rep = c("Strong republican", "Not str republican"),
+    ind = c("Ind,near rep", "Independent", "Ind,near dem"),
+    dem = c("Not str democrat", "Strong democrat")
+  )) %>%
+  count(partyidnew)
+```
+
+
+
+## Joining relational datasets
+
+```{r}
+
+# Toy datasets to use
+
+
+band <- tribble(
+   ~name,     ~band,
+  "Mick",  "Stones",
+  "John", "Beatles",
+  "Paul", "Beatles"
+)
+
+instrument <- tribble(
+    ~name,   ~plays,
+   "John", "guitar",
+   "Paul",   "bass",
+  "Keith", "guitar"
+)
+
+instrument2 <- tribble(
+    ~artist,   ~plays,
+   "John", "guitar",
+   "Paul",   "bass",
+  "Keith", "guitar"
+)
+```
+
+### Mutating joins
+
+#### 1.  *left_join(x, y, by="key variable")*: keeps all the observations (rows) in x
+
+A key is a variable that uniquely identifies an observation, otherwise, we need multiple variables to identify an observation,
+
+```{r}
+## left_join(x, y, by="key variable")  
+## join y to x, x is the primary dataset
+## mutate new variables in x by copying different variables in y
+## return a new dataset
+
+## left_join(x, y, by=c("key variable1", "key variable2"))
+
+dat1<-left_join(band, instrument, by="name")
+dat1
+```
+
+#### 2. *right_join(x, y, by="")*: keep all the observations (rows) in y
+
+The opposite way of *left_join()*
+
+```{r}
+right_join(band,instrument, by="name")
+```
+
+
+
+#### 3. *inner_join()* keeps all the observations in **both** x and y
+
+An inner join keeps observations that appear in both tables. 
+
+```{r}
+inner_join(band, instrument, by="name")
+#will lose some information in the primary dataset
+```
+
+
+#### 4. *full join* keeps all observations in x and y
+
+An full join keeps observations that appear in either x or y.
+
+```{r}
+full_join(band, instrument, by="name")
+#better, won't lose primary dataset info
+```
+
+
+### Filtering joins
+
+#### 1. *semi_join(x,y, by="")* keeps all the observations of x that have a match in y
+
+
+use semi_join() to collect the artists in *band* that have instrument info in *instrument*.
+```{r}
+semi_join(band, instrument, by="name")
+
+## use semi_join() to collect the artists in *band* that have instrument info in *instrument*.
+```
+
+
+
+#### 2. *anti_join(x,y, by="")* drops all the observations of x that have a match in y.  
+
+```{r}
+anti_join(band, instrument, by="name")
+
+## Use an anti_join() to return the rows of artists for which you don't have any instrument info.
+```
+
+
+
+#### Example: join relational datasets connected by key variables 
+
+```{r,eval=FALSE}
+# check out the package "nycflights13"
+
+flights # connects to 
+planes # via a single variable *tailnum*
+
+flights # connects to 
+airlines # through the *carrier* variable 
+
+flights # connects to 
+airports # via two variables *faa* and *dest*
+
+flights # connects to 
+weather # via *origin*, *year*, *month*, *day*, and *hour*
+
+```
+
+
+
+
+Example 1:
+
+
+Join airports to flights and get how many flights in flights flew to the airports listed in airports?
+(Hint: use n distinct() function to count.)
+
+```{r}
+flights %>% 
+semi_join(airports, by=c("dest"="faa")) %>%  #dest and faa are same thing in different datasets
+  summarise(total=n_distinct(dest))
+
+flights %>% 
+anti_join(airports, by=c("dest"="faa")) %>%  
+  summarise(total=n_distinct(dest))
+#number of airports in airports not in flights
+
+```
+
+
+## tidy up datasets
+
+The *tidyr* package helps tidy up messy datasets. 
+
+There are three interrelated rules which make a dataset tidy:
+
+- Each variable must have its own column
+
+- Each observation must have its own row
+
+- Each value must have its own cell
+
+There are a few key functions in the *tidyr* package, *pivot_longer()*, *pivot_wider()*, *separate()*
+
+
+```{r,echo=FALSE}
+# toy datasets
+
+# population table
+table1<-tibble(
+  `country`=c("Afghanistan","Brazil","China"),
+  `1999`=c(19987071, 172006362, 1272915272),
+  `2000`=c(20595360, 174504898, 1280428583)
+)
+table1
+```
+
+
+
+### 1. pivot_longer()
+
+A common problem is a dataset where some of the column names are not names of variables, but *values* of a variable.
+
+
+To tidy a dataset like this, we need to pivot the offending columns into a new pair of variables, it makes "wide" data longer.
+
+```{r}
+#template:
+
+#pivot_longer(dataset,
+# a set of columns = "The set of columns whose names are values, not variables", 
+# names_to = "The name of the variable to move the column names to", 
+# values_to = "The name of the variable to move the column values to")
+```
+
+```{r}
+pivot_longer(table1, c(`1999`,`2000`), names_to="year", values_to="population")
+```
+
+### 2. pivot_wider()
+
+*pivot_wider()* is the opposite of *pivot_longer()*. We use it when an observation is scattered across multiple rows. *pivot_longer()* makes wide tables narrower and longer, *pivot_wider()* makes long tables shorter and wider.
+
+```{r}
+table2<- tibble(
+  `country` = c("Afghanistan", "Afghanistan", "Afghanistan", "Afghanistan", "Brazil", "Brazil", "Brazil", "Brazil","China", "China","China", "China"),
+   `year` = c(1999,1999,2000,2000,1999,1999,2000,2000,1999,1999,2000,2000),
+   `type` = c("case", "population","case", "population","case", "population","case", "population","case", "population","case", "population"),
+   `count` = c(745, 19987071, 2666, 20595360, 37737, 172006362, 80488, 174504898, 212258, 1272915272, 213766, 1280428583)
+)
+table2
+```
+
+```{r}
+# template: 
+
+# pivot_wider(dataset, 
+#             names_from = "the column to take variable names from", 
+#             values_from = "the column to take values from")
+```
+
+```{r}
+
+table2 %>%
+pivot_wider(names_from = "type", values_from = "count") 
+
+```
+
+
+### Separate 
+*separate()* pulls apart one column into multiple columns
+```{r, echo=FALSE}
+table3<-tibble(
+    `country` = c("Afghanistan", "Afghanistan", "Brazil", "Brazil","China", "China"),
+     `year` = c(1999,2000,1999,2000,1999,2000),
+    `rate`= c("745/19987071", "2666 / 20595360", "37737 / 172006362", "80488 / 174504898", "212258/1272915272", "213766/1280428583")
+)
+table3
+```
+
+
+```{r}
+separate(table3, rate, into=c('case','population'), sep="/")
+
+```
+
+
+## Functions in stringr package
+
+All functions that work on strings in the stringr package start with *str_*
+
+1. str_c(): to combine two or more strings
+
+```{r}
+str_c("x", "y")
+```
+
+2. str_sub(): extract parts of a string. 
+str_sub() takes start and end arguments which give the position of the substring
+```{r}
+x <- c("apple", "eggplant", "banana")
+
+str_sub(x,1,3)
+str_sub(x[2],1,3)
+
+#change the first letter to upper case
+str_sub(x,1,1)<-str_to_upper(str_sub(x,1,1))
+x
+
+```
+
+
+3. str_view(): matching pattern with regular expressions
+
+Basic matches
+```{r}
+str_view(x,"an")
+
+# start with ^, end up with $
+str_view(x, "^a")
+str_view(x, "a$")
+
+
+```
+
+The next step up in complexity is ., which matches any character (except a newline):
+```{r}
+str_view(x, ".a.")
+
+```
+
+
+- \d: matches any digit.
+- \s: matches any whitespace (e.g. space, tab, newline).
+- [abc]: matches a, b, or c.
+- [^abc]: matches anything except a, b, or c.
+
+```{r}
+# Look for a literal character that normally has special meaning in a regex
+
+str_view(c("abc", "a.c", "a*c", "a c"), "a[ ]")
+```
+
+
+4. str_detect():to determine if a character vector matches a pattern, it returns a logical vector
+```{r}
+x <- c("apple", "banana", "pear")
+str_detect(x, "e")
+
+stringr::words
+
+stringr::words[str_length(stringr::words)==3]
+
+# What proportion of common words end with a vowel?
+mean(str_detect(stringr::words, "[aeiou]$"))
+
+```
+
+
+
+5. str_count():to tell how many matches there are in a string:
+```{r}
+x <- c("apple", "banana", "pear")
+str_count(x, "a")
+
+
+# On average, how many vowels per word?
+mean(str_count(stringr::words, "[aeiou]"))
+```
+
+6. str_extract(): to extract the actual text of a match string
+
+```{r}
+colours <- c(" red ", " orange ", " yellow ", " green ", " blue ", " purple ")
+colour_match <- str_c(colours, collapse = "|")  
+
+has_colour <- str_subset(sentences, colour_match)
+
+has_colour
+
+matches <- str_extract(has_colour, colour_match)
+matches
+
+```
+
+
+7. str_replace() and str_replace_all() allow you to replace matches with new strings
+
+```{r}
+x <- c("apple", "pear", "banana")
+str_replace(x, "[aeiou]", "-")
+
+str_replace_all(x, "[aeiou]", "-")
+
+
+x <- c("1 house", "2 cars", "3 people")
+str_replace_all(x, c("1" = "one", "2" = "two", "3" = "three"))
+```
+
+
+Your Turn >>>>>>>>>>>>>>>>>>>>>
+
+
+1. Isolate the last letter of every name and create a logical variable that displays whether the last letter is one of "a", "e", "i", "o", "u", or "y".  
+2.calculate the total number of names end in a vowel (by `year` and `sex`)   
+3. display the results as a line plot, separate by sex.
+
+```{r}
+summary(babynames$name)
+
+str_sub(babynames$name, 1,1)
+
+babynames %>%
+  mutate(vowel=str_detect(name, "[aeiouy]$")) %>%
+  group_by(year, sex) %>%
+  summarise(total=sum(vowel)) %>%
+  ggplot(aes(x=year, y=total)) + geom_line(aes(col=sex))
+
+```
+
+

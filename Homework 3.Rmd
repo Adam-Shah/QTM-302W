@@ -1,0 +1,60 @@
+---
+title: "Homework 3"
+author: "Adam Shah"
+date: "9/30/2020"
+output: html_document
+---
+1.
+```{r}
+gss<-read.csv("gss.csv")
+summary(gss$year)
+gss$year2<-as.factor(gss$year)
+is.factor(gss$year2)
+```
+
+2.
+```{r}
+summary(gss$year2)
+```
+The summary now shows the quantity in each level of the factor rather than treating "year" as a numeric variable and giving statistics such as median. 
+
+3. 2006 had the most respondents with 4510. 
+
+4.
+```{r}
+mean(gss$age[gss$year=="2006" & gss$sex=="FEMALE"],na.rm=TRUE)
+```
+The average age of females is 47.7 years old. 
+
+5.
+```{r}
+gss$income2<-gss$income
+```
+
+6. 
+```{r}
+gss$income2<-factor(gss$income)
+is.factor(gss$income2)
+levels(gss$income2)
+table(gss$income2)
+levels(gss$income2)<- c("2000", "12500", "17500", "22500", "25000", "3500", "4500", "5500", "6500", "7500", "9000", "DK", "1000", "REFUSED")
+levels(gss$income2)
+table(gss$income2)
+```
+
+7.
+```{r}
+gss$income2[gss$income=="DK"] <- NA
+gss$income2[gss$income=="REFUSED"] <- NA
+sum(is.na(gss$income2))
+summary(gss$income2)
+```
+
+8. 
+```{r}
+gss$income2<-as.numeric(as.character(gss$income2))
+is.numeric(gss$income2)
+mean(gss$income2[gss$sex=="MALE"],na.rm=TRUE)
+mean(gss$income2[gss$sex=="FEMALE"], na.rm=TRUE)
+```
+The average income is 19,540 dollars for males and 18,534 dollars for females. 

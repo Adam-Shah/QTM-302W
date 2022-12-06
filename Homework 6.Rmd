@@ -1,0 +1,55 @@
+---
+title: "Homework 6"
+author: "Adam Shah"
+date: "11/11/2020"
+output: html_document
+---
+## 1.
+```{r}
+library(ggplot2)
+library(ggthemes)
+library(dplyr)
+newgss2<-read.csv("newgss2.csv")
+married_age<-newgss2 %>%
+  group_by(year) %>%
+  summarise(avg=mean(age, na.rm = TRUE), percent=sum(marital=="MARRIED", na.rm = TRUE)/length(marital)*100)
+married_age
+```
+
+## 2. 
+
+```{r}
+ggplot(married_age, aes(x=year, y=percent)) + geom_point(color="red") + theme_gray()
+```
+
+## 3. 
+The percentage of married people has had a pretty steady and steep decline from around 1970 until 2010
+
+## 4.
+```{r}
+income_party<-newgss2 %>%
+  group_by(year, partyid) %>%
+  filter(year>1999 & year<2011) %>%
+  filter(partyid %in% c("STRONG REPUBLICAN", "STRONG DEMOCRAT", "INDEPENDENT")) %>%
+  summarise(percent=sum(income =="$25000 OR MORE", na.rm = TRUE)/length(income)*100)
+income_party
+```
+
+## 5. 
+```{r}
+ggplot(income_party) + geom_point(aes(x=year, y=percent), color="purple") + facet_wrap(~partyid) + theme_bw()
+```
+
+## 6. 
+Strong Republicans have the largest percentage of people making 25000 dollars or more.
+
+## 7. 
+```{r}
+regional_income <- newgss2 %>%
+  group_by(year, region) %>%
+  mutate(avgincome=mean(income1, na.rm=TRUE)) %>%
+  group_by(year) %>%
+  summarise(richest=region[which.max(avgincome)], poorest =region[which.min(avgincome)])
+regional_income
+```
+

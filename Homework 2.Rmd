@@ -1,0 +1,47 @@
+---
+title: "Homework 2"
+author: "Adam Shah"
+date: "9/24/2020"
+output: html_document
+---
+0.
+```{r}
+getwd()
+gss<-read.csv("gss.csv")
+```
+
+1.
+```{r}
+sum(is.na(gss$marital))
+```
+This variable has 20 missing values.
+
+2.
+```{r}
+table(gss$sex)
+female_percent<-(30022/(30022+23452))*100
+male_percent<-(23452/(30022+23452))*100
+female_percent
+male_percent
+```
+The respondents are 56.1% female and 43.9% male. 
+
+3.
+```{r}
+str(subset(gss, subset = age<30, na.rm=TRUE))
+str(subset(gss, subset=age>40, na.rm=TRUE))
+((53474-(29179+11400))/53474)*100
+```
+24.1 percent of respondents are betweeen 30 and 40 years old. 
+
+4.
+```{r}
+x<- subset(gss, subset=year==2008)
+str(x)
+y<- subset(gss, subset=year==2010)
+str(y)
+a<-mean(x[,"age"], na.rm = TRUE)
+b<-mean(y[,"age"], na.rm=TRUE)
+a*(2023/(2023+2044))+b*(2044/(2023+2044))
+```
+The average age of respondents who took the survey in either 2008 or 2010 is 47.9 years old. 

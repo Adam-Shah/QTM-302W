@@ -1,0 +1,541 @@
+---
+title: "Data Visualization with ggplot2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(plotly)
+library(maps)
+library(ggmap)
+```
+
+## Data Visualization
+
+[Hans Rollings](https://www.youtube.com/watch?v=hVimVzgtD6w)
+
+
+## ggplot2 package
+
+We will talk about how to visualize your data using *ggplot2*. R has several systems for making graphs, but ggplot2 is one of the most elegant and most versatile. *ggplot2* implements the **grammar of graphics**, a coherent system for describing and building graphs. 
+
+```{r}
+plot(trees$Girth,trees$Height)
+```
+
+
+![DATA](dataplot.png)
+"In brief, the grammar tells us that a statistical graphics is a mapping from data to aesthetic attributes (color, shape, size) of geometric objects (points, lines, bars). The plot may also contain statistical transformations of the data and is drawn on a specific coordinate system" -- from ggplot2 book.
+
+
+
+### ggplot(): 
+
+The *ggplot()* function allows us to build up a plot layer by layer
+
+Put three important features together to draw a graph: 
+
+- data 
+- geometric objects
+- coordinate system
+
+You begin a plot with the function *ggplot()*, it creates a coordinate system that we can add layers to,  the first argument of ggplot() is the data to use in the graph, then complete the graph by adding one or more layers to *ggplot()*,
+
+*geom_XXX()* adds a layer of geometric objects to your plot, for example *geom_point()* creates a scatterplot (many different geom functions for different types of graphs),
+
+each *geom_XXX()* takes a mapping argument, which is always paired with *aes()*, mapping variables to visual properties.
+
+
+#### Import dataset
+```{r}
+diamonds
+summary(diamonds)  
+dim(diamonds)
+# get a random small sample of size 1000
+set.seed(111)
+diamonds1<-diamonds[sample(1:53940, 1000, replace = F), ]
+
+```
+
+
+#### basic ggplot
+
+make a scatterplot between carat and price
+```{r}
+# get it step by step:
+
+# 1. data 
+
+# ggplot(data=DATA)
+ggplot(diamonds1)
+
+# 2. add geometric objects
+
+# ggplot(data=DATA) +
+#  geom_XXX(mapping = aes(MAPPING))
+
+
+# 3. map variables to x and y axes (coordinate)
+ggplot(diamonds1) + 
+  geom_point(aes(x=carat, y=price))
+
+
+# "+" sign is at the end of each line
+```
+
+
+```{r}
+# Add labels and theme
+ggplot(diamonds1)+
+  geom_point(aes(x=carat, y=price))+
+  labs(x="Carat",y="Price", title="Figure 1:diamonds price by carat")+
+  theme_bw()
+
+# save graph to an object
+plot1<-ggplot(diamonds1, aes(x=carat, y=price))+
+  geom_point()+
+  labs(x="Carat",y="Price",title="Figure 1:diamonds price by carat")
+
+```
+
+
+#### Mapping variables to aesthetic attributes
+
+Now we can add more variables to this plot by mapping variables to *aesthetic* attributes (color, shape, size, transparency). To map an aesthetic to a variable, associate the name of the aesthetic to the name of the variable inside *aes()*. ggplot2 will automatically assign a unique level of the aesthetic to each unique value of the variable.
+
+Size
+
+```{r}
+ggplot(diamonds1)+
+  geom_point(aes(x=carat, y= price,size=carat))
+```
+
+Shape
+
+```{r}
+ggplot(diamonds1)+
+  geom_point(aes(x=carat, y= price,shape=cut))
+```
+
+*size for numeric variables; shape for categorical variables;*
+
+alpha: transparency
+
+```{r}
+ggplot(diamonds1)+
+  geom_point(aes(x=carat, y= price), alpha=0.1)
+
+
+ggplot(diamonds1)+
+  geom_point(aes(x=carat, y= price, alpha=cut))
+
+
+```
+
+
+Color
+
+color for numeric variable
+```{r}
+ggplot(diamonds1)+
+  geom_point(aes(x=carat, y=price,color=price))
+```
+
+color for categorical variable
+```{r}
+ggplot(diamonds1)+
+  geom_point(aes(x=carat, y=price,color=cut))
+```
+
+
+
+
+#### Add more geom functions 
+
+##### Adding lines to scatterplot
+
+geom_smooth()
+```{r}
+ggplot(diamonds1)+  
+  geom_point(aes(x=carat, y=price))+     ## local variable
+  geom_smooth(aes(x=carat, y=price),method="lm")
+
+```
+
+```{r}
+ggplot(diamonds1, aes(x=carat, y=price,color=clarity))+   ### global variable
+  geom_point()+     ## local variable
+  geom_smooth(method="lm")
+
+
+```
+
+
+
+
+
+
+
+
+
+Example 1:
+use the mtcars dataset to make a scatterplot of  wt and mpg (two quan variables), set the shape to the variable am, set the color to the variable cyl.
+
+```{r}
+?mtcars
+ggplot(mtcars, aes(x=wt, y=mpg, shape=am, color=cyl)) + geom_point()
+
+ggplot(mtcars, aes(x=wt, y=mpg)) +
+  geom_point(aes(shape=factor(am), color=factor(cyl)))
+```
+
+
+
+
+## Facet: put multiple subplots in one plot
+```{r}
+ggplot(diamonds1, aes(x=carat, y=price))+
+  geom_point(aes(color=clarity))+
+  facet_grid(~cut)
+
+ggplot(diamonds1, aes(x=carat, y=price))+
+  geom_point(aes(color=clarity))+
+  facet_grid(color~cut)
+```
+
+
+
+## Add text as labels
+```{r}
+ggplot(mpg, aes(cty, hwy))+
+  geom_point(alpha=0.7, size =7, position="jitter", aes(color=cty))+
+  geom_text(aes(label=manufacturer), check_overlap = T)
+
+```
+
+
+
+## ggplot: not scatterplot  
+
+### barplot
+```{r}
+## barplot for one categorical variable
+ggplot(diamonds1, aes(cut))+
+  geom_bar()
+
+## barplot for one categorical variable (x) and one quantitative variable (y)
+ggplot(diamonds1, aes(x, y))+
+ geom_col()
+
+## add more variables with different attributes
+ggplot(diamonds1, aes(cut))+
+  geom_bar(aes(col=clarity))    # color for outline of bars
+
+ggplot(diamonds1, aes(cut))+
+  geom_bar(aes(fill=clarity))    # fill color inside of bar
+
+
+ggplot(diamonds1, aes(cut))+
+  geom_bar(aes(fill=clarity), position="dodge")+
+  coord_flip()  # flip coordinates 
+```
+
+### boxplot, histogram, density, line graphs
+```{r}
+## boxplot for one quantitative v.s. one categorical 
+ggplot(diamonds1, aes(x=cut, y=price))+
+  geom_boxplot(aes(color=cut))
+
+## one quantitative variable
+ggplot(diamonds, aes(price))+
+  geom_histogram(bins=10)
+
+
+ggplot(diamonds, aes(price))+
+  geom_density()
+
+ggplot(diamonds, aes(price))+
+  geom_density(aes(color=cut))
+
+## add lines to time series data
+# ?economics 
+plot1<-ggplot(economics, aes(x=date, y=pce))+
+  geom_line()
+plot1
+
+ggsave("plot1.pdf")
+
+
+
+```
+
+
+
+## plotly objects (interactive web-based graphs)
+
+Plotly is an R package for creating interactive web-based graphs.
+
+There are two main ways to initiate a plotly object in R. The *plot_ly()* function transforms data into a plotly object, while the *ggplotly()* function transforms a ggplot object into a plotly object. Regardless of how a plotly object is created, printing it results in an interactive web-based visualization with tooltips, zooming, and panning enabled by default. 
+
+### 1. ggplotly()
+
+```{r}
+p<-ggplot(mtcars, aes(x=wt, y=mpg))+
+  geom_point(aes(col=factor(cyl)))+
+  geom_smooth(aes(col=factor(cyl)), method="lm", se=F)+
+  annotate(geom="text", x=2,y=25, label="y=ax+b")
+
+ggplotly(p)
+
+```
+
+
+Intro to Animations in ggplot2:
+
+Animations can be created by using the *frame* argument aesthetic in ggplotly(). By default, animations populate a play button and slider component for controlling the state of the animation (to pause an animation, click on a relevant location on the slider bar).
+
+
+```{r}
+library(gapminder)
+
+p<-ggplot(gapminder, aes(x=gdpPercap, y=lifeExp, color=continent,shape = continent)) +
+  geom_point(aes(size = pop, frame = year, ids=country)) +
+  scale_x_log10()
+p
+
+ggplotly(p) 
+
+
+```
+
+
+
+### 2. plot_ly()
+
+The *plot_ly()* function provides a direct interface to plotly.js, so anything in the [figure reference](https://plot.ly/r/reference/) can be specified via *plot_ly()*.
+
+A plotly visualization is composed of one (or more) trace(s), and every trace has a *type* (the default trace type is "scatter") can be used to draw a large amount of geometries along with the *add_XX()* functions.
+
+The *plot_ly()* function has a number of arguments that make it easier to scale data values to visual aesthetics (e.g., *color/colors, symbol/symbols, linetype/linetypes, size/sizes*). 
+
+
+
+#### Basic plot:
+
+1. Histogram
+
+```{r}
+# template 
+# plot_ly(data, x, y, symbol, size,  type, mode, color)
+
+p1<-plot_ly(mtcars, x=~mpg, type="histogram")
+p1
+
+
+p2<-plot_ly(mtcars, x=~wt) %>% add_histogram(name="wt")
+
+subplot(p1,p2) %>% hide_legend()
+
+
+```
+
+2. Boxplot
+```{r}
+plot_ly(mtcars, x = ~factor(cyl), y=~mpg, type = "box")
+
+
+plot_ly(mtcars, x=~factor(cyl), y=~mpg, type="box", boxpoints="all", pointpos=1, marker=list(color="green"))  %>%
+  layout(title = "Boxplot")
+
+p1<-plot_ly(mtcars, x="Overall", y=~mpg, type = "box")
+p2<-plot_ly(mtcars, x=~factor(cyl), y=~mpg, type="box")
+subplot(p1,p2)
+```
+
+
+3. Scatterplot
+```{r}
+plot_ly(mtcars, x=~wt, y=~mpg, color=~factor(cyl), type="scatter", mode="text", text=~factor(cyl))
+
+```
+
+
+4. Line graph
+```{r}
+# txhousing is a time series dataset
+
+plot_ly(txhousing, x=~date, y=~median, mode="line", color = ~city)
+
+p<-plot_ly(txhousing, x=~date, y=~median) %>%
+  add_lines(color =~city) %>%
+  hide_legend()
+
+p
+```
+
+
+
+We can manipulate data, express complex multi-layer plots, and chain all operations together via *%>%*. It is more readable and understandable.
+
+```{r}
+txhousing %>%
+  group_by(city) %>%
+  plot_ly(x=~date, y=~median) %>%
+  add_lines(name="Texan cities", alpha=I(0.2)) %>%  #first trace: add one line per city
+  filter(city=="Houston") %>%
+  add_lines(name="Houston", color=I("red")) # second trace
+```
+
+
+Sometimes the directed graph of a pipeline can be restrictive. (In this example, after filter the data down to Houston, there is no way to recover the orignial data inside the pipeline). 
+
+```{r}
+p<-txhousing %>%
+  group_by(city) %>% 
+  plot_ly(x = ~date, y = ~median) %>%
+  # plots one line per city since p knows city is a grouping variable
+  add_lines(alpha = 0.2, name = "Texan Cities") %>%
+  add_lines(name = "Houston", data = filter(txhousing, city == "Houston")) %>%
+  add_lines(name = "San Antonio", data = filter(txhousing, city == "San Antonio"))
+p
+
+```
+
+### Add comments to the plot
+
+```{r}
+plot_ly(mtcars, x = ~wt, y = ~mpg, type="scatter", mode="markers") %>%
+slice(c(which.max(mpg), which.min(mpg))) %>%
+add_annotations(text =c( "Max mpg", "Min mpg"))
+```
+
+
+```{r}
+plot_ly(mtcars, x = ~wt, y = ~mpg, type="scatter", mode="markers") %>%
+add_annotations(text=~factor(cyl), ax=45)
+
+plot_ly(mtcars, x = ~wt, y = ~mpg, type="scatter", mode="markers") %>%
+add_annotations(text = "4", data = filter(mtcars, cyl == 4))
+```
+
+
+## maps
+
+```{r}
+library(nycflights13)
+```
+
+### 1. ggmap package makes it easy to retrieve raster map tiles from popular online mapping services like Stamen Maps and Google Maps, and plot them using the ggplot2 framework:
+
+####  Add the points to the map
+
+```{r}
+
+data1<-flights %>%
+  drop_na() %>%
+  group_by(dest) %>%
+  summarise(sum=n()) %>%
+  left_join(airports, by=c("dest"="faa")) 
+data1
+
+us <- c(left = -125, bottom = 25.75, right = -67, top = 49)
+map <- get_stamenmap(us, zoom = 5, maptype = "toner-lite")
+ggmap(map)
+
+ggmap(map) + geom_point(data=data1,
+        aes(x=lon, y=lat, color=sum, size=sum), na.rm = T) +
+  scale_color_gradient(low = "blue", high="red")
+
+```
+
+
+### get state map background
+
+```{r}
+states <- map_data("state")
+ggplot(data = states) + 
+  geom_polygon(aes(x = long, y = lat, fill = region, group = group), color = "white") + 
+  coord_fixed(1.2) +
+  guides(fill=FALSE) # turn off the color legend
+```
+
+
+
+## get a state map background
+
+```{r}
+states <- map_data("state")  # maps package
+
+ga_df <- states %>%
+  filter(region == "georgia")
+
+ggplot(data = ga_df) + 
+  geom_polygon(aes(x = long, y = lat), fill = "palegreen", color = "black") 
+
+
+ga_base<-ggplot(data = ga_df) + 
+  geom_polygon(aes(x = long, y = lat, group = group), fill = "gray", color = "black") + 
+  coord_quickmap()+theme_void()
+
+
+ga_base
+
+```
+
+## get county map
+```{r}
+
+ga_base<-ggplot(data = ga_df) + 
+  geom_polygon(aes(x = long, y = lat, group = group), fill = "gray", color = "black") + 
+  coord_quickmap()+theme_void()
+
+county_df <- map_data("county") %>%
+    filter(region == "georgia")
+state_df <- map_data("state")%>%
+    filter(region == "georgia")
+
+
+
+
+```
+
+
+```{r}
+
+GAdat<-read.csv("GAdat.csv")
+
+county_df$subregion <- replace(county_df$subregion, county_df$subregion=="de kalb", "dekalb")
+
+GAdat$County <- tolower(GAdat$County)
+
+
+mapdat <- left_join(GAdata1,county_df, by = c("County"="subregion"))
+
+p <-    ggplot(mapdat, aes(long, lat, group = group)) +
+        geom_polygon(aes(fill = Population, color="yellow"),
+                     colour = alpha("red", 1/2))  +
+          scale_fill_gradient(low="green", high="red")+
+        geom_polygon(data = state_df, colour = "black", fill = NA) + 
+        theme_void() +
+  coord_fixed(1.2) 
+p
+
+
+# choose your own color
+
+ggplot(mapdat, aes(long, lat, group = group)) +
+        geom_polygon(aes(fill = Population, color="yellow"),
+                     colour = alpha("red", 1/2))  +
+        geom_polygon(data = state_df, colour = "black", fill = NA) + 
+        theme_void() +
+  coord_fixed(1.2)+
+scale_fill_gradientn(colours = rev(rainbow(7)),
+                         breaks = c(2, 4, 10, 100, 1000, 10000),
+                         trans = "log10")
+
+```
+
+
+
+

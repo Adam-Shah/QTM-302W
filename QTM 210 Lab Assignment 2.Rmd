@@ -1,0 +1,117 @@
+---
+title: "Lab assignment 2 - Combinatorial Probabilities"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+RNGkind(sample.kind="Rounding")
+```
+
+In class and during the lab, we investigated the birthday problem: What is the probability that among a relatively *large* number of people, *two people* are born on the same day.
+A little more abstractly, we wondered about the probability that choosing from a large number of options (the 365 days) sufficiently many times (say 23 or 39 times, the number of people you're interested in) results in the same option being selected twice.
+
+In this assignment we ask a similar but somewhat opposite question: What is the probability that among a relatively *small* number of people, *all people* are born in the same season.
+A little more abstractly again, we will wonder about the probability that choosing from a small number of options (the 4 seasons) even a small number of times (small groups of 2 to 10), all the options end up being the same.
+
+## 0. Set seed
+
+```{r echo = T}
+set.seed(1234)
+```
+
+## 1. Analytical solution
+
+**[1 points]** Compute analytically (i.e., using the correct *exact* math formula) the probability that a group of `n` friends are all born in the same season (there are 4 seasons and you should assume all seasons are equally likely and independent across friends).
+Store the probabilities for all `n` between 2 and 10 into a vector called `math` and display the values in that vector.
+
+The result should look as follows:
+
+```{r}
+n <- 2:10
+for(x in n){
+  math <- (1/4)^(n-1)
+}
+math
+```
+
+## 2. Simulation
+
+### a) First steps: two friends
+
+**[1 points]** Draw two numbers with equal probability from 1,2,3,4 (representing the four seasons), with replacement. 
+Store the two numbers in a vector called `seas` and display the value of the vector.
+
+Given how you set the random seed and assuming you sample the two numbers in the "standard" way we learned during the lab, the result should look as follows.
+
+```{r}
+seas <- sample(1:4, size=2, replace=T)
+seas
+```
+
+**[1 points]** Check whether all the numbers in your `seas` vector are the same and display the result.
+
+```{r}
+seas[1]==seas[2]
+```
+
+**[2 points]** Let's now simulate the above process for 1000 times.
+Draw 1000 vectors of two numbers with equal probability from 1,2,3,4 with replacement. 
+For each vector check wether all the numbers are the same, and record the number of vectors for which this is the case.
+Finally, report the proportion of the 1000 vectors for which all the numbers are the same
+
+```{r}
+sameseason=0
+for (x in 1:1000) {
+  seas <- sample(1:4, size=2, replace=T)
+  if (seas[1]==seas[2]){
+    sameseason=sameseason+1
+  } else {
+    sameseason=sameseason
+  }
+}
+sameseason
+
+psameseason=sameseason/1000
+psameseason
+```
+
+### b) Generalize to `n` friends for `n` between 2 and 10
+
+**[4 points]** Repeat the last step for every vector length (i.e., every number of friends) between 2 and 10.
+For each vector length, record the proportion of the 1000 vectors for which all the numbers are the same into a vector called `rec`.
+Finally, display vector `rec`.
+
+```{r}
+n<- 1000
+rec <- rep(NA,9)
+
+for (x in 2:10) {
+  sameseason=0
+  for (y in 1:n) {
+    seas <- sample(1:4, size=x, replace=T)
+    if (length(unique(seas))==1){
+      sameseason=sameseason+1
+    } 
+  }
+  psameseason <- sameseason/n
+  rec[x-1] <- psameseason
+}
+rec
+```
+
+## 3. Compare simulation and analytical results
+
+**[1 points]** Plot the results of your simulation (vector `rec`) in red and the analytical result (vector `math`) in green on the same graph.
+
+You can overlay two vectors `x` and `y` on the same graph using the following code:
+
+`plot(x,type="b",col="red")`
+
+`lines(y,type="b",col="green")`
+
+```{r}
+plot(rec,type='b',col='red')
+lines(math, type='b',col='green')
+```
+

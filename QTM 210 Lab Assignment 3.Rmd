@@ -1,0 +1,161 @@
+---
+title: "Lab assignment 3 - Conditional Probabilities"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T)
+```
+
+As covered in Lab 3, we approached the Monty Hall problem and used sample function to generate random samples with given probability weights. In the Lab 3 assignment, we will utilize sample function with probability weights to simulate another conditional probability.
+
+Consider a medical screening problem. A group of $n$ people receive diagnostic screening test for a certain disease. We know that the prevalence of the disease is 0.0001. In addition, the true positive rate of the screening test is 0.90, while the false positive rate of the screening test is 0.001.
+
+The above scenario can be formulated by mathematical notations. Let $D \in \{0,1\}$ denote the disease status. $D = 1$ represents disease and $D = 0$ represents non-disease. Then the prevalence indicates 
+$$P(D = 1) = 0.0001 \quad P(D = 0) = 0.9999.$$
+Let $T \in \{0,1\}$ denote the result of the screening test. $T = 1$ represents the event that the test says there is disease, while $T = 0$ is the event that the test says there is no disease. Then 0.90 true positive rate is equivalent to
+$$P(T = 1|D = 1) = 0.90$$
+and 0.001 false positive rate can be written as
+$$P(T = 1|D = 0) = 0.001$$
+Now our probability of interest is the conditional probability of having the disease given that the test says there is disease, i.e. 
+$$P(D = 1|T = 1).$$
+
+In our 5th edition textbook, example 2.4.15 (example 2.4.13 in 6th ed) shows how to calculate $P(D = 1|T = 1)$ by Bayes' Theorem. It turns out that $P(D = 1|T = 1) = 0.08$, which means only 8% of the individuals identified as having the disease actually have the disease.
+
+In this lab assignment, we are going to verify $P(D = 1|T = 1) = 0.08$ by simulation in step-by-step mannar.
+
+Let me know if you find any places unclear or need clarification.
+## 0. Set seed
+
+```{r, include=T}
+set.seed(210)
+```
+
+## 1. Generate the disease status $D$ and test result $T$ for a single participant.
+
+The prevalence ($P(D = 1) = 0.0001, P(D = 0) = 0.9999$) tells us $D$ can be regarded as a heavily unfair coin, with probability of observing a head 0.0001 and probability of observing a tail 0.9999.
+
+**[1 points]** Simulate $D$ by sample function with weighted probability. Print `D`.
+
+```{r}
+D<- sample(0:1, size=1, replace=T, prob=c(0.9999,0.0001))
+D
+```
+
+If $D=1$, we have $P(T = 1|D = 1) = 0.90$, which means $P(T = 0|D = 1) = 1 - P(T = 1|D = 1) = 0.1$. 
+
+If $D=0$, we have $P(T = 1|D = 0) = 0.001$, which means $P(T = 0|D = 0) = 1 - P(T = 1|D = 0) = 0.999$. 
+
+The above relationships tell us that given $D=1$ or $D=0$, $T$ can also be generated in the same way as generating an unfair coin. 
+
+**[1 point]** Simulate $T$ based on the value of $D$. Use a scalar named `test` to save simulated $T$. Print `test`.
+
+```{r}
+if (D==0){
+  T<- sample(0:1, size=1, replace=T, prob = c(0.999, 0.001))
+} else {
+  T <- sample(0:1, size=1, replace=T, prob = c(0.1, 0.9))
+}
+test<- T
+test
+```
+
+## 2. Check whether the event of interest occurs
+
+Our probability of interest is $P(D = 1|T = 1)$. In our simulation, the empirical form of $P(D = 1|T = 1)$ is the ratio between the number of participants with both $D=1$ and $T = 1$ and the number of participants with $T=1$. Thus, we would like to initialize two counters, namely `tcount` and `tdcount`. In each simulation, if $T$ is 1, then we add one to `tcount`. In addition, if $T$ and $D$ are both 1, then we add one to `tdcount`.
+
+**[1 point]** Initialize `tcount` and `tdcount`. Given simulated $D$ (`D`) and $T$ (`test`) from the previous chunks, use if statements to check conditions and add one to the two counters if conditions satisfy. 
+
+```{r}
+tcount=0
+tdcount=0
+
+D<- sample(0:1, size=1, replace=T, prob=c(0.9999,0.0001))
+if (D==0){
+  T<- sample(0:1, size=1, replace=T, prob = c(0.999, 0.001))
+} else {
+  T <- sample(0:1, size=1, replace=T, prob = c(0.1, 0.9))
+}
+if(T==1){
+  tcount<-tcount+1
+  if(D==1){
+  tdcount<-tdcount+1
+  }
+}
+```
+
+## 3. Repeat steps 1 and 2 for 100,000 times
+
+**[2 points]** For N = 100,000, use for loop to generate $D$ and $T$ for N times. After running the for loop, print the ratio between `tdcount` and `tcount`.
+
+```{r}
+set.seed(210)
+tcount=0
+tdcount=0
+N<-100000
+for (i in 1:N){
+  D<- sample(0:1, size=1, replace=T, prob=c(0.9999,0.0001))
+  if (D==1){
+    T<- sample(0:1, size=1, replace=T, prob = c(0.1, 0.9))
+  } else {
+    T <- sample(0:1, size=1, replace=T, prob = c(0.999, 0.001))
+  }
+  if(T==1){
+    tcount<-tcount+1
+    if(D==1){
+      tdcount<-tdcount+1
+    }
+  }
+}
+tdcount/tcount
+```
+
+## 4.Create a function to conduct simulation for different N
+
+**[2 points]** Create a function called `simulation_screen` to conduct simulation for different N. Then print the result from `simulation_screen(200000)`.
+
+```{r}
+set.seed(210)
+simulation_screen <- function(N) {
+  tcount=0
+  tdcount=0
+
+  for (i in 1:N){
+    D<- sample(0:1, size=1, replace=T, prob=c(0.9999,0.0001))
+    if (D==0){
+      T<- sample(0:1, size=1, replace=T, prob = c(0.999, 0.001))
+    } else {
+      T <- sample(0:1, size=1, replace=T, prob = c(0.1, 0.9))
+    }
+    if(T==1){
+      tcount<-tcount+1
+      if(D==1){
+        tdcount<-tdcount+1
+      }
+    }
+  }
+  tdcount/tcount
+}
+simulation_screen(200000)
+```
+
+**[2 points]** Run simulation for the following given population size and plot the result. Then plot the theoretical probability 0.08 by abline.
+
+```{r}
+set.seed(210)
+N <- c(10000,50000,100000,250000,500000,750000,1000000)
+result<- matrix(NA, nrow=7, ncol=1)
+for (i in 1:7){
+  result[i,] <- simulation_screen(N[i])
+}
+result
+```
+
+
+```{r}
+set.seed(210)
+plot(N, result[,1], type= 'b', ylab='tdcount/tcount',ylim=c(0,0.2))
+abline(h=(0.08),col='green')
+```
+
