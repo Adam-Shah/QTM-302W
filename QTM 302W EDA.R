@@ -13,6 +13,8 @@ all_age_groups <- subset(abortion_data, abortion_data$Age.Group == "[All]" &
 head(all_age_groups,200)
 summary(all_age_groups$Percentage.of.cause.specific.deaths.out.of.total.deaths)
 
+hexcodes<-c("#ea3d2f","#1cb0ca","#428ac9","#a52a29","#ffe100")
+
 all_age_groups %>% 
   filter(#Country.Name == "Egypt" | #1
         Country.Name == "Philippines" | #1
@@ -32,8 +34,6 @@ all_age_groups %>%
     ylab("% of cause specific deaths") +
     scale_color_manual(values=hexcodes)
 
-hexcodes<-c("#ea3d2f","#1cb0ca","#428ac9","#a52a29","#ffe100")
-
 fig <- plot_ly(all_age_groups,
     x = ~Year,
     y = ~Percentage.of.cause.specific.deaths.out.of.total.deaths,
@@ -43,7 +43,7 @@ fig <- plot_ly(all_age_groups,
     mode = 'markers',
   )
 fig
-colors=c("#ea3d2f","#1cb0ca","#428ac9","#a52a29","#ffe100")
+
 
 ourdata <- subset(all_age_groups, all_age_groups$Country.Name == "Philippines" | 
                     all_age_groups$Country.Name == "Brazil" |
