@@ -1,26 +1,10 @@
----
-title: International Trends in Abortion Policy and Mortality
+# International Trends in Abortion Policy and Mortality
 author: Adam Shah and Melanie Yu
-output: github_document
 date: "`r Sys.Date()`"
-editor_options:
-  chunk_output_type: console
----
 
-<!-- Short Description  -->
+
+## Short Description  
 The discussion of abortion policy has been a topic of contentious debate for decades; many argue that access to safe abortion is a human right which offers reproductive freedom, while others posits against abortion on the basis of morality. The primary research question of this project is to determine a possible effect of more restrictions in abortion legislation on the deaths attributed to these abortions. We believe that observing various countries with different levels of abortion restrictions may illustrate how the overturning of Roe v. Wade could affect those in states whose legislations have changed. 
-
-*Updated on `r Sys.time()`*
-
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
-```{r, include = FALSE}
-library(rmarkdown)
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  out.width = "100%"
-)
-```
 
 
 ## Table of contents
