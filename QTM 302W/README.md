@@ -34,8 +34,8 @@ In order to determine the nature of the correlation between restrictiveness and 
 
 ## Instructions
 1. Clone this repo [tutorial](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository).
-2. Raw Data can be downloaded [here] (https://platform.who.int/mortality/themes/theme-details/topics/indicator-groups/indicator-group-details/MDB/abortion). When downloading from the WHO, export dataset and select full data.
-3. Data processing/visualization scripts are being kept [here](Repo folder containing data processing scripts/notebooks)
+2. Raw Data can be downloaded [here](https://platform.who.int/mortality/themes/theme-details/topics/indicator-groups/indicator-group-details/MDB/abortion). When downloading from the WHO, export dataset and select full data.
+3. Data processing/visualization scripts are being kept [here](https://github.com/Adam-Shah/QTM-302W/blob/main/QTM%20302W/QTM%20302W%20EDA.R)
 4. Policy categories of each country can be found [here](https://reproductiverights.org/maps/abortion-laws-by-state/)
 
 ## To-do list
