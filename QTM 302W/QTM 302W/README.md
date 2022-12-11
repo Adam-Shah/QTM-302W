@@ -1,6 +1,5 @@
 # International Trends in Abortion Policy and Mortality
 author: Adam Shah and Melanie Yu
-date: "`r Sys.Date()`"
 
 
 ## Short Description  
