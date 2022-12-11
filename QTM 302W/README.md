@@ -46,7 +46,7 @@ In order to determine the nature of the correlation between restrictiveness and 
 ## Resources
 
 - WHO [data](https://platform.who.int/mortality/themes/theme-details/topics/indicator-groups/indicator-group-details/MDB/abortion) on mortality due to unsafe abortions. When downloading from the WHO, export dataset and select full data.
-- Policy categories of each country can be found[here](https://reproductiverights.org/maps/abortion-laws-by-state/)
+- Policy categories of each country can be found [here](https://reproductiverights.org/maps/abortion-laws-by-state/)
 
 ## To-do list
 
