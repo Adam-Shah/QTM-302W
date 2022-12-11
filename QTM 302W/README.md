@@ -1,5 +1,6 @@
 # International Trends in Abortion Policy and Mortality
-author: Adam Shah and Melanie Yu
+#### Authors: Adam Shah and Melanie Yu
+#### Laguages Used: R
 
 
 ## Short Description  
