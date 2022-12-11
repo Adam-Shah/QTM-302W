@@ -6,7 +6,7 @@
 
 ## Short Description
 
-The discussion of abortion policy has been a topic of contentious debate for decades; many argue that access to safe abortion is a human right which offers reproductive freedom, while others posits against abortion on the basis of morality. The primary research question of this project is to determine a possible effect of more restrictions in abortion legislation on the deaths attributed to these abortions. We believe that observing various countries with different levels of abortion restrictions may illustrate how the overturning of Roe v. Wade could affect those in states whose legislations have changed.
+The discussion of abortion policy has been a topic of contentious debate for decades; many argue that access to safe abortion is a human right which offers reproductive freedom, while others posits against abortion on the basis of morality. The primary research question of this project is to determine a possible effect of more restrictions in abortion legislation on the deaths attributed to these abortions. We believe that observing various countries with different levels of abortion restrictions may illustrate how the overturning of _Roe v. Wade_ could affect those in states whose legislations have changed.
 
 ## Table of contents
 
@@ -54,7 +54,7 @@ Next steps would be to utilize other datasets to derive more detailed exploratio
 
 ## Status
 
-Project is: _in progress_
+Project is: _Finished_
 
 ## Contact
 
