@@ -32,9 +32,16 @@ The data was filtered to include ages 5 to 74 and all sexes, and the data for th
 
 In order to determine the nature of the correlation between restrictiveness and abortion-related deaths, a kind of linear regression was run on the categorical variable of restrictiveness score. Although this variable is categorical and the numerical spacing between restrictiveness score values is arbitrary, the linear regression was still performed to obtain statistics describing the significance of the relationship between these values. 
 
+## Instructions
+1. Clone this repo [tutorial](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository).
+2. Raw Data can be downloaded [here] (https://platform.who.int/mortality/themes/theme-details/topics/indicator-groups/indicator-group-details/MDB/abortion). When downloading from the WHO, export dataset and select full data.
+3. Data processing/visualization scripts are being kept [here](Repo folder containing data processing scripts/notebooks)
+4. Policy categories of each country can be found [here](https://reproductiverights.org/maps/abortion-laws-by-state/)
+
 ## To-do list
 
-Next steps would be to utilize other datasets to derive more detailed explorations of the topic, since the data from the WHO does not include much information about possible covariates. Also, expanding the analysis to more countries would yield insights as to if the relationships we found in fact held true as a significant correlation across the globe. However, due to a lack of data standardization across countries, this would present a challenge. Likely, datasets from countries of interest would have to be normalized and cleaned. 
+Next steps would be to utilize other datasets to derive more detailed explorations of the topic, since the data from the WHO does not include much information about possible covariates. Also, expanding the analysis to more countries would yield insights as to if the relationships we found in fact held true as a significant correlation across the globe. However, due to a lack of data standardization across countries, this would present a challenge. Likely, datasets from countries of interest would have to be normalized and cleaned.
+
 
 ## Status
 Project is: _in progress_
